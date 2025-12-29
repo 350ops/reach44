@@ -36,7 +36,7 @@ export const OrderCheckout: React.FC<OrderCheckoutProps> = ({ platform, follower
             // On native devices, relative `/api/*` won't work. Use the dev server host in dev,
             // and the production URL in production.
             const configuredOrigin = process.env.EXPO_PUBLIC_API_BASE;
-            const origin = configuredOrigin ?? Constants.expoConfig?.extra?.router?.origin ?? 'https://www.reach974.com';
+            const origin = configuredOrigin ?? Constants.expoConfig?.extra?.router?.origin ?? 'https://reach44-production.up.railway.app';
             const debuggerHost = Constants.expoConfig?.hostUri || 'localhost:8081';
             const baseUrl = __DEV__ ? `http://${debuggerHost}` : origin;
             url = `${baseUrl}/api/create-payment-intent`;
@@ -72,7 +72,7 @@ export const OrderCheckout: React.FC<OrderCheckoutProps> = ({ platform, follower
                     url: url,
                 };
                 console.error('[OrderCheckout] Server Error Response:', errorDetails);
-                
+
                 // Show detailed error with copy option
                 const errorMessage = `Status: ${response.status}\nURL: ${url}\n\n${text.slice(0, 300)}`;
                 Alert.alert(
@@ -88,9 +88,9 @@ export const OrderCheckout: React.FC<OrderCheckoutProps> = ({ platform, follower
             }
 
             const data = await response.json();
-            console.log('[OrderCheckout] Response data received:', { 
+            console.log('[OrderCheckout] Response data received:', {
                 hasClientSecret: !!data.clientSecret,
-                hasError: !!data.error 
+                hasError: !!data.error
             });
 
             const { clientSecret, error } = data;
@@ -141,7 +141,7 @@ export const OrderCheckout: React.FC<OrderCheckoutProps> = ({ platform, follower
                 environment: __DEV__ ? 'DEV' : 'PRODUCTION',
             };
             console.error('[OrderCheckout] Exception caught:', errorDetails);
-            
+
             // More specific error messages
             let errorMessage = 'Failed to initialize payment';
             if (e?.message?.includes('Network request failed') || e?.message?.includes('fetch')) {
@@ -149,14 +149,14 @@ export const OrderCheckout: React.FC<OrderCheckoutProps> = ({ platform, follower
             } else if (e?.message) {
                 errorMessage = `Error: ${e.message}\n\nURL: ${safeUrl}`;
             }
-            
+
             // Show error with copy option for debugging
             Alert.alert(
                 'Payment Initialization Failed',
                 errorMessage,
                 [
-                    { 
-                        text: 'Copy Error Details', 
+                    {
+                        text: 'Copy Error Details',
                         onPress: () => {
                             Clipboard.setStringAsync(JSON.stringify(errorDetails, null, 2));
                             Alert.alert('Copied!', 'Error details copied to clipboard. Check console for full logs.');

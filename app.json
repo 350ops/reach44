@@ -61,7 +61,7 @@
     },
     "extra": {
       "router": {
-        "origin": "https://www.reach974.com"
+        "origin": "https://reach44-production.up.railway.app"
       },
       "eas": {
         "projectId": "dda0ffb6-9ccc-430a-b6ff-d4cc9844c2a2"

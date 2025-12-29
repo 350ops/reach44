@@ -10,7 +10,7 @@ if [ "$ENV" = "dev" ]; then
     BASE_URL="http://localhost:8081"
     echo "🧪 Testing DEV API: $BASE_URL"
 else
-    BASE_URL="https://www.reach974.com"
+    BASE_URL="https://reach44-production.up.railway.app"
     echo "🧪 Testing PRODUCTION API: $BASE_URL"
 fi
 

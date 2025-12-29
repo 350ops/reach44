@@ -1,9 +1,8 @@
 [build]
-# Nixpacks will detect Node; set root to the server subfolder
 builder = "NIXPACKS"
-buildCommand = "cd server && npm install"
+# let Nixpacks detect Node; we install inside start.sh if missing
 
 [deploy]
-startCommand = "cd server && npm start"
+startCommand = "bash start.sh"
 restartPolicyType = "on-failure"
 
