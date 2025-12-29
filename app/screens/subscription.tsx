@@ -1,14 +1,14 @@
-import { Image, Pressable, Text, View, Alert } from 'react-native'
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, Stack } from 'expo-router'
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { router } from 'expo-router';
-import useThemeColors from '../contexts/ThemeColors';
 import Icon from '@/components/Icon';
-import ActionSheet, { ActionSheetRef } from 'react-native-actions-sheet';
 import ThemedScroller from '@/components/ThemeScroller';
 import ThemedText from '@/components/ThemedText';
-import { useStripe } from '@stripe/stripe-react-native';
+import { useStripe } from '@/utils/stripe';
+import { router, Stack } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
+import { Alert, Pressable, Text, View } from 'react-native';
+import ActionSheet, { ActionSheetRef } from 'react-native-actions-sheet';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import useThemeColors from '../contexts/ThemeColors';
+
 import Constants from 'expo-constants';
 
 
@@ -87,7 +87,7 @@ const Subscription = () => {
       <Stack.Screen options={{
         headerShown: false,  // Disabling the header
         presentation: 'card',
-        animation:'slide_from_bottom'
+        animation: 'slide_from_bottom'
 
       }} />
 

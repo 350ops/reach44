@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Pressable, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Alert } from 'react-native';
-import ThemedText from '@/components/ThemedText';
 import useThemeColors from '@/app/contexts/ThemeColors';
-import { shadowPresets } from '@/utils/useShadow';
+import AnimatedView from '@/components/AnimatedView';
 import { Button } from '@/components/Button';
 import Icon from '@/components/Icon';
-import AnimatedView from '@/components/AnimatedView';
-import { useStripe } from '@stripe/stripe-react-native';
+import ThemedText from '@/components/ThemedText';
+import { useStripe } from '@/utils/stripe';
+import { shadowPresets } from '@/utils/useShadow';
+import React, { useState } from 'react';
+import { Alert, TextInput, View } from 'react-native';
+
 
 interface OrderCheckoutProps {
     platform: string;

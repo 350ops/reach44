@@ -1,13 +1,14 @@
-import '../global.css';
-import React from 'react';
+import { DrawerProvider } from '@/app/contexts/DrawerContext';
+import { StripeProvider } from '@/utils/stripe';
 import { Stack } from 'expo-router';
 import { NativeWindStyleSheet } from 'nativewind';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { DrawerProvider } from '@/app/contexts/DrawerContext';
-import useThemedNavigation from './hooks/useThemedNavigation';
+import React from 'react';
 import { Platform } from 'react-native';
-import { StripeProvider } from '@stripe/stripe-react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import '../global.css';
+import { ThemeProvider } from './contexts/ThemeContext';
+import useThemedNavigation from './hooks/useThemedNavigation';
+
 
 const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 const STRIPE_MERCHANT_ID = 'merchant.com.mmdev13.luna';
