@@ -9,7 +9,7 @@ import '../global.css';
 import { ThemeProvider } from './contexts/ThemeContext';
 import useThemedNavigation from './hooks/useThemedNavigation';
 
-const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY || "pk_live_51QiAABDO4BRJvLH7ctaJuK2Hg3srajjDZhxijucRuHhA2RRjguQ1QxB5TL0XfnPINWX8hKtRpY5pZcZErgyI77As00NF3ZMijQ";
+const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 
 
 NativeWindStyleSheet.setOutput({
