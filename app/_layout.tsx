@@ -10,7 +10,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import useThemedNavigation from './hooks/useThemedNavigation';
 
 const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
-const STRIPE_MERCHANT_ID = 'merchant.com.mmdev13.luna';
+const MERCHANT_IDENTIFIER = 'merchant.com.mmdev13.luna';
 const URL_SCHEME = 'luna';
 
 NativeWindStyleSheet.setOutput({
@@ -40,7 +40,7 @@ export default function RootLayout() {
         <DrawerProvider>
           <StripeProvider
             publishableKey={STRIPE_PUBLISHABLE_KEY}
-            merchantIdentifier={STRIPE_MERCHANT_ID} // Apple Pay merchant ID
+            merchantIdentifier={MERCHANT_IDENTIFIER} // Apple Pay merchant ID
             urlScheme={URL_SCHEME} // 3DS / bank redirects
           >
             <ThemedLayout />

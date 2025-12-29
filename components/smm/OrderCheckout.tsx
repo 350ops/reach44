@@ -5,9 +5,9 @@ import Icon from '@/components/Icon';
 import ThemedText from '@/components/ThemedText';
 import { useStripe } from '@/utils/stripe';
 import { shadowPresets } from '@/utils/useShadow';
-import React, { useState } from 'react';
-import { Alert, TextInput, View, Platform } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
+import React, { useState } from 'react';
+import { Alert, TextInput, View } from 'react-native';
 
 
 interface OrderCheckoutProps {
@@ -31,13 +31,15 @@ export const OrderCheckout: React.FC<OrderCheckoutProps> = ({ platform, follower
         if (!handle.trim()) return;
 
         setIsProcessing(true);
+        let url: string | undefined;
         try {
             // On native devices, relative `/api/*` won't work. Use the dev server host in dev,
             // and the production URL in production.
-            const origin = Constants.expoConfig?.extra?.router?.origin ?? 'https://www.reach974.com';
+            const configuredOrigin = process.env.EXPO_PUBLIC_API_BASE;
+            const origin = configuredOrigin ?? Constants.expoConfig?.extra?.router?.origin ?? 'https://www.reach974.com';
             const debuggerHost = Constants.expoConfig?.hostUri || 'localhost:8081';
             const baseUrl = __DEV__ ? `http://${debuggerHost}` : origin;
-            const url = `${baseUrl}/api/create-payment-intent`;
+            url = `${baseUrl}/api/create-payment-intent`;
 
             // Debug logging
             console.log('[OrderCheckout] Environment:', __DEV__ ? 'DEV' : 'PRODUCTION');
@@ -130,11 +132,12 @@ export const OrderCheckout: React.FC<OrderCheckoutProps> = ({ platform, follower
                 Alert.alert('Payment Sheet Error', `${sheetError.code}: ${sheetError.message}`);
             }
         } catch (e: any) {
+            const safeUrl = typeof url !== 'undefined' ? url : 'unknown';
             const errorDetails = {
                 message: e?.message,
                 stack: e?.stack,
                 name: e?.name,
-                url: url || 'unknown',
+                url: safeUrl,
                 environment: __DEV__ ? 'DEV' : 'PRODUCTION',
             };
             console.error('[OrderCheckout] Exception caught:', errorDetails);
@@ -142,9 +145,9 @@ export const OrderCheckout: React.FC<OrderCheckoutProps> = ({ platform, follower
             // More specific error messages
             let errorMessage = 'Failed to initialize payment';
             if (e?.message?.includes('Network request failed') || e?.message?.includes('fetch')) {
-                errorMessage = `Network error: Could not reach server.\n\nURL: ${url}\n\nCheck your connection and verify the API is deployed.`;
+                errorMessage = `Network error: Could not reach server.\n\nURL: ${safeUrl}\n\nCheck your connection and verify the API is deployed.`;
             } else if (e?.message) {
-                errorMessage = `Error: ${e.message}\n\nURL: ${url}`;
+                errorMessage = `Error: ${e.message}\n\nURL: ${safeUrl}`;
             }
             
             // Show error with copy option for debugging

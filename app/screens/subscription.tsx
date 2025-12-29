@@ -44,7 +44,8 @@ const Subscription = () => {
 
       // On native devices, relative `/api/*` won't work. Use the dev server host in dev,
       // and the production URL in production.
-      const origin = Constants.expoConfig?.extra?.router?.origin ?? 'https://www.reach974.com';
+      const configuredOrigin = process.env.EXPO_PUBLIC_API_BASE;
+      const origin = configuredOrigin ?? Constants.expoConfig?.extra?.router?.origin ?? 'https://www.reach974.com';
       const debuggerHost = Constants.expoConfig?.hostUri || 'localhost:8081';
       const baseUrl = __DEV__ ? `http://${debuggerHost}` : origin;
       const url = `${baseUrl}/api/subscription-payment-intent`;
