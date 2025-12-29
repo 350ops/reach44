@@ -9,11 +9,9 @@ import '../global.css';
 import { ThemeProvider } from './contexts/ThemeContext';
 import useThemedNavigation from './hooks/useThemedNavigation';
 
-
 const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 const STRIPE_MERCHANT_ID = 'merchant.com.mmdev13.luna';
 const URL_SCHEME = 'luna';
-
 
 NativeWindStyleSheet.setOutput({
   default: 'native',
@@ -38,7 +36,6 @@ function ThemedLayout() {
 export default function RootLayout() {
   return (
     <GestureHandlerRootView className={`bg-light-primary dark:bg-dark-primary ${Platform.OS === 'ios' ? 'pb-0 ' : ''}`} style={{ flex: 1 }}>
-
       <ThemeProvider>
         <DrawerProvider>
           <StripeProvider
@@ -50,7 +47,6 @@ export default function RootLayout() {
           </StripeProvider>
         </DrawerProvider>
       </ThemeProvider>
-
     </GestureHandlerRootView>
   );
 }
