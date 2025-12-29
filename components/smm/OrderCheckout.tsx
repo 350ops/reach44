@@ -6,7 +6,8 @@ import ThemedText from '@/components/ThemedText';
 import { useStripe } from '@/utils/stripe';
 import { shadowPresets } from '@/utils/useShadow';
 import React, { useState } from 'react';
-import { Alert, TextInput, View } from 'react-native';
+import { Alert, TextInput, View, Platform } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 
 
 interface OrderCheckoutProps {
@@ -17,10 +18,6 @@ interface OrderCheckoutProps {
 }
 
 import Constants from 'expo-constants';
-
-// Backend URL - Uses the local IP address and correct port for physical devices
-const debuggerHost = Constants.expoConfig?.hostUri || 'localhost:8081';
-const BACKEND_URL = `http://${debuggerHost}/api/create-payment-intent`;
 
 export const OrderCheckout: React.FC<OrderCheckoutProps> = ({ platform, followers, price, onSuccess }) => {
     const colors = useThemeColors();
@@ -35,38 +32,86 @@ export const OrderCheckout: React.FC<OrderCheckoutProps> = ({ platform, follower
 
         setIsProcessing(true);
         try {
-            const response = await fetch(BACKEND_URL, {
+            // On native devices, relative `/api/*` won't work. Use the dev server host in dev,
+            // and the production URL in production.
+            const origin = Constants.expoConfig?.extra?.router?.origin ?? 'https://www.reach974.com';
+            const debuggerHost = Constants.expoConfig?.hostUri || 'localhost:8081';
+            const baseUrl = __DEV__ ? `http://${debuggerHost}` : origin;
+            const url = `${baseUrl}/api/create-payment-intent`;
+
+            // Debug logging
+            console.log('[OrderCheckout] Environment:', __DEV__ ? 'DEV' : 'PRODUCTION');
+            console.log('[OrderCheckout] Request URL:', url);
+            console.log('[OrderCheckout] Request body:', { followers, targetLink: handle, platforms: platform });
+
+            const requestBody = {
+                followers,
+                targetLink: handle,
+                platforms: platform,
+            };
+
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    followers,
-                    targetLink: handle,
-                    platforms: platform,
-                }),
+                body: JSON.stringify(requestBody),
             });
+
+            console.log('[OrderCheckout] Response status:', response.status);
+            console.log('[OrderCheckout] Response ok:', response.ok);
 
             if (!response.ok) {
                 const text = await response.text();
-                console.error("[OrderCheckout] Server Error Response:", text);
-                Alert.alert('Error', `Server returned ${response.status}: ${text.slice(0, 100)}`);
+                const errorDetails = {
+                    status: response.status,
+                    statusText: response.statusText,
+                    body: text,
+                    url: url,
+                };
+                console.error('[OrderCheckout] Server Error Response:', errorDetails);
+                
+                // Show detailed error with copy option
+                const errorMessage = `Status: ${response.status}\nURL: ${url}\n\n${text.slice(0, 300)}`;
+                Alert.alert(
+                    'Server Error',
+                    errorMessage,
+                    [
+                        { text: 'Copy Details', onPress: () => Clipboard.setStringAsync(JSON.stringify(errorDetails, null, 2)) },
+                        { text: 'OK' }
+                    ]
+                );
                 setIsProcessing(false);
                 return;
             }
 
             const data = await response.json();
+            console.log('[OrderCheckout] Response data received:', { 
+                hasClientSecret: !!data.clientSecret,
+                hasError: !!data.error 
+            });
+
             const { clientSecret, error } = data;
 
             if (error) {
-                Alert.alert('Error', error);
+                console.error('[OrderCheckout] API returned error:', error);
+                Alert.alert('Payment Error', error);
                 setIsProcessing(false);
                 return;
             }
 
+            if (!clientSecret) {
+                console.error('[OrderCheckout] Missing clientSecret in response:', data);
+                Alert.alert('Error', 'Server response missing clientSecret');
+                setIsProcessing(false);
+                return;
+            }
+
+            console.log('[OrderCheckout] Initializing payment sheet...');
             const { error: sheetError } = await initPaymentSheet({
                 merchantDisplayName: "reach974",
                 paymentIntentClientSecret: clientSecret,
+                returnURL: 'luna://stripe-redirect',
                 allowsDelayedPaymentMethods: true,
                 defaultBillingDetails: {
                     name: 'Guest',
@@ -74,13 +119,49 @@ export const OrderCheckout: React.FC<OrderCheckoutProps> = ({ platform, follower
             });
 
             if (!sheetError) {
+                console.log('[OrderCheckout] Payment sheet initialized successfully');
                 setIsReady(true);
             } else {
-                Alert.alert('Error', sheetError.message);
+                console.error('[OrderCheckout] Payment sheet error:', {
+                    code: sheetError.code,
+                    message: sheetError.message,
+                    type: sheetError.type,
+                });
+                Alert.alert('Payment Sheet Error', `${sheetError.code}: ${sheetError.message}`);
             }
-        } catch (e) {
-            console.error(e);
-            Alert.alert('Error', 'Failed to initialize payment');
+        } catch (e: any) {
+            const errorDetails = {
+                message: e?.message,
+                stack: e?.stack,
+                name: e?.name,
+                url: url || 'unknown',
+                environment: __DEV__ ? 'DEV' : 'PRODUCTION',
+            };
+            console.error('[OrderCheckout] Exception caught:', errorDetails);
+            
+            // More specific error messages
+            let errorMessage = 'Failed to initialize payment';
+            if (e?.message?.includes('Network request failed') || e?.message?.includes('fetch')) {
+                errorMessage = `Network error: Could not reach server.\n\nURL: ${url}\n\nCheck your connection and verify the API is deployed.`;
+            } else if (e?.message) {
+                errorMessage = `Error: ${e.message}\n\nURL: ${url}`;
+            }
+            
+            // Show error with copy option for debugging
+            Alert.alert(
+                'Payment Initialization Failed',
+                errorMessage,
+                [
+                    { 
+                        text: 'Copy Error Details', 
+                        onPress: () => {
+                            Clipboard.setStringAsync(JSON.stringify(errorDetails, null, 2));
+                            Alert.alert('Copied!', 'Error details copied to clipboard. Check console for full logs.');
+                        }
+                    },
+                    { text: 'OK' }
+                ]
+            );
         } finally {
             setIsProcessing(false);
         }
