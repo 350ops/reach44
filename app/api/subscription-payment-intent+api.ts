@@ -1,11 +1,11 @@
 import Stripe from "stripe";
 
-const PRICE_EUR_CENTS = {
-  Monthly: 699,
-  Annual: 3999,
+const PRICE_QAR_CENTS = {
+  Monthly: 2900,
+  Annual: 29900,
 } as const;
 
-type Plan = keyof typeof PRICE_EUR_CENTS;
+type Plan = keyof typeof PRICE_QAR_CENTS;
 
 export async function POST(request: Request) {
   try {
@@ -24,11 +24,11 @@ export async function POST(request: Request) {
 
     const body = await request.json().catch(() => ({}));
     const plan = (body?.plan ?? "Monthly") as Plan;
-    const amount = PRICE_EUR_CENTS[plan] ?? PRICE_EUR_CENTS.Monthly;
+    const amount = PRICE_QAR_CENTS[plan] ?? PRICE_QAR_CENTS.Monthly;
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount,
-      currency: "eur",
+      currency: "qar",
       automatic_payment_methods: { enabled: true },
       metadata: {
         product: "luna_plus",
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     return Response.json({
       clientSecret: paymentIntent.client_secret,
       amount,
-      currency: "eur",
+      currency: "qar",
       plan,
     });
   } catch (error) {

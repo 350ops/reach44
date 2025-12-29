@@ -11,6 +11,8 @@ import useThemeColors from '../contexts/ThemeColors';
 
 import Constants from 'expo-constants';
 
+const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+
 
 const Subscription = () => {
   const insets = useSafeAreaInsets();
@@ -36,9 +38,16 @@ const Subscription = () => {
     try {
       setIsPaying(true);
 
-      // On native devices, relative `/api/*` won't work. Use the dev server host.
+      if (!STRIPE_PUBLISHABLE_KEY) {
+        throw new Error('Stripe publishable key is missing. Please check your environment variables.');
+      }
+
+      // On native devices, relative `/api/*` won't work. Use the dev server host in dev,
+      // and the production URL in production.
+      const origin = Constants.expoConfig?.extra?.router?.origin ?? 'https://www.reach974.com';
       const debuggerHost = Constants.expoConfig?.hostUri || 'localhost:8081';
-      const url = `http://${debuggerHost}/api/subscription-payment-intent`;
+      const baseUrl = __DEV__ ? `http://${debuggerHost}` : origin;
+      const url = `${baseUrl}/api/subscription-payment-intent`;
 
       const response = await fetch(url, {
         method: 'POST',
@@ -153,8 +162,8 @@ const Subscription = () => {
                 <ThemedText className='font-bold text-lg'>$0.00</ThemedText>
               </View>
 
-              <SelectPlan onSelect={() => handleSelect('Annual')} isSelected={selectedPlan === 'Annual'} period="Annual" badge="Save 43%" price="$39.99/year after trial" save="($3.33 per month)" />
-              <SelectPlan onSelect={() => handleSelect('Monthly')} isSelected={selectedPlan === 'Monthly'} period="Monthly" price="$6.99/month after trial" badge={undefined} save={undefined} />
+              <SelectPlan onSelect={() => handleSelect('Annual')} isSelected={selectedPlan === 'Annual'} period="Annual" badge="Save 43%" price="299 QAR/year after trial" save="(~25 QAR per month)" />
+              <SelectPlan onSelect={() => handleSelect('Monthly')} isSelected={selectedPlan === 'Monthly'} period="Monthly" price="29 QAR/month after trial" badge={undefined} save={undefined} />
             </View>
             <View className='px-5 pt-4 w-full items-center justify-center '>
               <Pressable
