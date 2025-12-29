@@ -18,6 +18,9 @@ web-build/
 .env.production.local
 .env
 
+# Old project backup (kept locally; should not be included in builds)
+_backup_expostripe/
+
 # Logs
 npm-debug.log*
 yarn-debug.log*
