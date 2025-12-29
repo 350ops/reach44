@@ -1,0 +1,9 @@
+[build]
+# Nixpacks will detect Node; set root to the server subfolder
+builder = "NIXPACKS"
+buildCommand = "cd server && npm install"
+
+[deploy]
+startCommand = "cd server && npm start"
+restartPolicyType = "on-failure"
+
