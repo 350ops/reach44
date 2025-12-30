@@ -11,7 +11,7 @@ import useThemedNavigation from './hooks/useThemedNavigation';
 
 const STRIPE_PUBLISHABLE_KEY = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? '';
 const MERCHANT_IDENTIFIER = 'merchant.com.mmdev13.luna';
-const URL_SCHEME = 'luna';
+const URL_SCHEME = 'reach974';
 
 NativeWindStyleSheet.setOutput({
   default: 'native',

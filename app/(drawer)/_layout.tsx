@@ -1,8 +1,8 @@
-import React from 'react';
-import { Drawer } from 'expo-router/drawer';
-import { useThemeColors } from '../contexts/ThemeColors';
 import CustomDrawerContent from '@/components/CustomDrawerContent';
-import { useFonts, Outfit_400Regular, Outfit_700Bold } from '@expo-google-fonts/outfit';
+import { Outfit_400Regular, Outfit_700Bold, useFonts } from '@expo-google-fonts/outfit';
+import { Drawer } from 'expo-router/drawer';
+import React from 'react';
+import { useThemeColors } from '../contexts/ThemeColors';
 
 export default function DrawerLayout() {
     const colors = useThemeColors();
@@ -39,6 +39,21 @@ export default function DrawerLayout() {
                     drawerLabel: 'Menu',
                 }}
                 //redirect={true}
+            />
+            <Drawer.Screen
+                name="chat"
+                options={{
+                    drawerLabel: 'Chat',
+                    title: 'Chat',
+                    drawerItemStyle: { display: 'none' },
+                }}
+            />
+            <Drawer.Screen
+                name="landing"
+                options={{
+                    drawerLabel: 'Landing',
+                    title: 'Landing',
+                }}
             />
         </Drawer>
     );

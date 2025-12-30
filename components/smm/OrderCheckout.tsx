@@ -113,10 +113,18 @@ export const OrderCheckout: React.FC<OrderCheckoutProps> = ({ platform, follower
             const { error: sheetError } = await initPaymentSheet({
                 merchantDisplayName: "reach974",
                 paymentIntentClientSecret: clientSecret,
-                returnURL: 'luna://stripe-redirect',
+                returnURL: 'reach974://stripe-redirect',
                 allowsDelayedPaymentMethods: true,
                 defaultBillingDetails: {
                     name: 'Guest',
+                },
+                applePay: {
+                    merchantCountryCode: 'GB',
+                },
+                googlePay: {
+                    merchantCountryCode: 'GB',
+                    testEnv: __DEV__,
+                    currencyCode: 'QAR',
                 },
             });
 

@@ -1,11 +1,11 @@
 {
   "expo": {
     "newArchEnabled": true,
-    "name": "Luna",
-    "slug": "luna",
+    "name": "reach974",
+    "slug": "reach974",
     "version": "1.0.0",
     "runtimeVersion": "1.0.0",
-    "scheme": "luna",
+    "scheme": "reach974",
     "experiments": {
       "tsconfigPaths": true
     },
@@ -33,14 +33,14 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#000000"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.mmdev13.luna",
+      "bundleIdentifier": "com.mmdev13.reach974",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -57,7 +57,7 @@
       },
       "navigationBarColor": "transparent",
       "navigationBarHidden": true,
-      "package": "com.mmdev13.luna"
+      "package": "com.mmdev13.reach974"
     },
     "extra": {
       "router": {

@@ -67,10 +67,17 @@ const Subscription = () => {
       }
 
       const { error: initError } = await initPaymentSheet({
-        merchantDisplayName: 'Luna',
+        merchantDisplayName: 'reach974',
         paymentIntentClientSecret: clientSecret,
-        applePay: { merchantCountryCode: 'GB' },
-        returnURL: 'luna://stripe-redirect',
+        applePay: {
+          merchantCountryCode: 'GB'
+        },
+        googlePay: {
+          merchantCountryCode: 'GB',
+          testEnv: __DEV__,
+          currencyCode: 'QAR',
+        },
+        returnURL: 'reach974://stripe-redirect',
         allowsDelayedPaymentMethods: true,
       });
 
@@ -109,7 +116,7 @@ const Subscription = () => {
           <View style={{ paddingTop: insets.top, paddingBottom: insets.bottom }} className='bg-light-primary dark:bg-dark-primary flex-1 h-full  py-4 flex-1'>
             <View className='w-full justify-between flex-row items-center px-4'>
               <View className='flex-row items-center'>
-                <ThemedText className='text-3xl font-outfit-bold'>Luna</ThemedText>
+                <ThemedText className='text-3xl font-outfit-bold'>reach974</ThemedText>
                 <View
                   className='px-2 py-1 bg-highlight rounded-lg ml-2'>
                   <Text className='text-white font-outfit-bold'>PRO</Text>

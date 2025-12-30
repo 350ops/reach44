@@ -1,11 +1,11 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { View, ScrollView, StyleSheet } from 'react-native';
-import ThemedText from '@/components/ThemedText';
 import useThemeColors from '@/app/contexts/ThemeColors';
-import { PlatformSelector, Platform } from './PlatformSelector';
-import { QuantitySlider } from './QuantitySlider';
-import { OrderCheckout } from './OrderCheckout';
 import AnimatedView from '@/components/AnimatedView';
+import ThemedText from '@/components/ThemedText';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { Dimensions, ScrollView, View } from 'react-native';
+import { OrderCheckout } from './OrderCheckout';
+import { Platform, PlatformSelector } from './PlatformSelector';
+import { QuantitySlider } from './QuantitySlider';
 
 type FlowState = 'platform' | 'quantity' | 'checkout' | 'completed';
 
@@ -15,8 +15,13 @@ interface Message {
     content: string;
 }
 
-export const SMMChatFlow: React.FC = () => {
+type SMMChatFlowProps = {
+    onSendMessageRef?: React.MutableRefObject<((text: string) => void) | null>;
+};
+
+export const SMMChatFlow: React.FC<SMMChatFlowProps> = ({ onSendMessageRef }) => {
     const colors = useThemeColors();
+    const { width: screenWidth } = Dimensions.get('window');
     const [state, setState] = useState<FlowState>('platform');
     const [messages, setMessages] = useState<Message[]>([
         { id: '1', role: 'bot', content: "Welcome to reach974. How can I boost your social media today?" },
@@ -29,12 +34,31 @@ export const SMMChatFlow: React.FC = () => {
     }>({});
 
     const scrollViewRef = useRef<ScrollView>(null);
+    const contentHeightRef = useRef<number>(0);
+    
+    // Calculate bubble widths: user bubbles wider, bot bubbles narrower
+    const userBubbleMaxWidth = screenWidth * 0.95 - 48; // 95% of screen minus padding
+    const botBubbleMaxWidth = screenWidth * 0.85 - 48; // 85% of screen minus padding
+
+    const scrollToBottom = React.useCallback(() => {
+        // Use requestAnimationFrame to ensure DOM is updated
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                scrollViewRef.current?.scrollToEnd({ animated: true });
+            }, 100);
+        });
+    }, []);
 
     useEffect(() => {
-        setTimeout(() => {
-            scrollViewRef.current?.scrollToEnd({ animated: true });
-        }, 100);
-    }, [messages, state]);
+        // Scroll to bottom when messages change, with multiple attempts to ensure it works even with interactive components
+        scrollToBottom();
+        const timer1 = setTimeout(() => scrollToBottom(), 200);
+        const timer2 = setTimeout(() => scrollToBottom(), 400);
+        return () => {
+            clearTimeout(timer1);
+            clearTimeout(timer2);
+        };
+    }, [messages, state, scrollToBottom]);
 
     const addBotMessage = (content: string) => {
         setMessages(prev => [...prev, { id: Date.now().toString(), role: 'bot', content }]);
@@ -43,6 +67,38 @@ export const SMMChatFlow: React.FC = () => {
     const addUserMessage = (content: string) => {
         setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'user', content }]);
     };
+
+    const handleSendMessage = React.useCallback((text: string) => {
+        if (!text.trim()) return;
+        setMessages(prev => [...prev, { id: (Date.now() + 1).toString(), role: 'user', content: text }]);
+        // Scroll to bottom immediately after adding user message
+        scrollToBottom();
+        setTimeout(() => scrollToBottom(), 200);
+        setTimeout(() => scrollToBottom(), 400);
+        // You can add bot response logic here if needed
+        setTimeout(() => {
+            setMessages(prev => [...prev, { id: Date.now().toString(), role: 'bot', content: "I understand. Let me help you with that!" }]);
+        }, 600);
+    }, [scrollToBottom]);
+
+    // Expose handleSendMessage to parent via ref - use useLayoutEffect for synchronous setup
+    useLayoutEffect(() => {
+        if (onSendMessageRef) {
+            onSendMessageRef.current = handleSendMessage;
+        }
+    }, [onSendMessageRef, handleSendMessage]);
+
+    // Also set in useEffect as backup
+    useEffect(() => {
+        if (onSendMessageRef) {
+            onSendMessageRef.current = handleSendMessage;
+        }
+        return () => {
+            if (onSendMessageRef) {
+                onSendMessageRef.current = null;
+            }
+        };
+    }, [onSendMessageRef, handleSendMessage]);
 
     const handlePlatformSelect = (platform: Platform) => {
         addUserMessage(platform.charAt(0).toUpperCase() + platform.slice(1));
@@ -71,11 +127,22 @@ export const SMMChatFlow: React.FC = () => {
         }, 500);
     };
 
+    const handleContentSizeChange = React.useCallback((contentWidth: number, contentHeight: number) => {
+        // Only scroll if content height increased (new content added)
+        if (contentHeight > contentHeightRef.current) {
+            contentHeightRef.current = contentHeight;
+            scrollToBottom();
+        }
+    }, [scrollToBottom]);
+
     return (
         <ScrollView
             ref={scrollViewRef}
             className="flex-1"
-            contentContainerStyle={{ paddingBottom: 100 }}
+            contentContainerStyle={{ paddingBottom: 300, flexGrow: 1 }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+            onContentSizeChange={handleContentSizeChange}
         >
             <View className="px-6 pt-24">
                 {messages.map((msg) => (
@@ -86,9 +153,10 @@ export const SMMChatFlow: React.FC = () => {
                     >
                         <View
                             style={{
-                                backgroundColor: msg.role === 'user' ? '#1718FE' : colors.secondary
+                                backgroundColor: msg.role === 'user' ? '#1718FE' : colors.secondary,
+                                maxWidth: msg.role === 'user' ? userBubbleMaxWidth : botBubbleMaxWidth,
                             }}
-                            className={`max-w-[85%] rounded-3xl px-6 py-4 ${msg.role === 'user' ? 'rounded-br-sm' : 'rounded-bl-sm border border-black/5 dark:border-white/5'
+                            className={`rounded-3xl px-6 py-4 ${msg.role === 'user' ? 'rounded-br-sm' : 'rounded-bl-sm border border-black/5 dark:border-white/5'
                                 }`}
                         >
                             <ThemedText
@@ -100,24 +168,31 @@ export const SMMChatFlow: React.FC = () => {
                     </AnimatedView>
                 ))}
 
+                {/* Interactive components appear after messages */}
                 {state === 'platform' && (
-                    <PlatformSelector onSelect={handlePlatformSelect} />
+                    <View className="mb-6">
+                        <PlatformSelector onSelect={handlePlatformSelect} />
+                    </View>
                 )}
 
                 {state === 'quantity' && selection.platform && (
-                    <QuantitySlider
-                        platform={selection.platform}
-                        onConfirm={handleQuantityConfirm}
-                    />
+                    <View className="mb-6">
+                        <QuantitySlider
+                            platform={selection.platform}
+                            onConfirm={handleQuantityConfirm}
+                        />
+                    </View>
                 )}
 
                 {state === 'checkout' && selection.platform && selection.followers && selection.price && (
-                    <OrderCheckout
-                        platform={selection.platform}
-                        followers={selection.followers}
-                        price={selection.price}
-                        onSuccess={handleCheckoutSuccess}
-                    />
+                    <View className="mb-6">
+                        <OrderCheckout
+                            platform={selection.platform}
+                            followers={selection.followers}
+                            price={selection.price}
+                            onSuccess={handleCheckoutSuccess}
+                        />
+                    </View>
                 )}
             </View>
         </ScrollView>
